@@ -1,34 +1,48 @@
-import { useState } from 'react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+// Import pages/components
+import Dashboard from './components/dashboard/Dashboard';
 import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import MainLayout from './components/layout/MainLayout';
+import DiaryView from './components/diary/DiaryView';
 
-function AuthenticatedApp() {
-  const { user } = useAuth();
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-
-  if (!user) {
-    return authMode === 'login' ? (
-      <Login onToggleMode={() => setAuthMode('signup')} />
-    ) : (
-      <Signup onToggleMode={() => setAuthMode('login')} />
-    );
-  }
-
-  return (
-    <ProtectedRoute>
-      <MainLayout />
-    </ProtectedRoute>
-  );
-}
+// Optional: simple 404 page
+const NotFound = () => <h1>404 - Page Not Found</h1>;
 
 function App() {
+  // For demo, you can implement auth logic later
+  const isAuthenticated = false; // set true after login
+
   return (
-    <AuthProvider>
-      <AuthenticatedApp />
-    </AuthProvider>
+    <BrowserRouter>
+      <Routes>
+        {/* Auth Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        {/* Protected Routes */}
+        <Route
+          path="/dashboard"
+          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />}
+        />
+
+        {/* Diary Route */}
+        <Route
+          path="/diary/:id"
+          element={isAuthenticated ? <DiaryView /> : <Navigate to="/login" replace />}
+        />
+
+        {/* Default route */}
+        <Route
+          path="/"
+          element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />}
+        />
+
+        {/* 404 fallback */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
